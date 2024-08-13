@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import os
-from app.api import orders, shipping, tax  # Make sure these paths are correct
 
 app = FastAPI()
 
@@ -21,6 +20,9 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+# Define the Printful API base URL
+BASE_URL = "https://api.printful.com"
+
 # Fetch API key and store ID from environment variables
 PRINTFUL_API_KEY = os.getenv("PRINTFUL_API_KEY")
 PRINTFUL_STORE_ID = os.getenv("PRINTFUL_STORE_ID")
@@ -38,7 +40,7 @@ def get_headers():
 @app.get("/api/products")
 def get_products():
     """Fetch products from the Printful API"""
-    url = "https://api.printful.com/store/products"
+    url = f"{BASE_URL}/store/products"  # Using the base URL defined above
     headers = get_headers()
     response = requests.get(url, headers=headers)
 
@@ -46,12 +48,6 @@ def get_products():
         return response.json()["result"]
     else:
         raise HTTPException(status_code=response.status_code, detail=response.text)
-
-
-# Register other API routes (orders, shipping, tax)
-app.include_router(orders.router, prefix="/api/orders")
-app.include_router(shipping.router, prefix="/api/shipping")
-app.include_router(tax.router, prefix="/api/tax")
 
 
 @app.get("/")
