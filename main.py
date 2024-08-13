@@ -8,7 +8,10 @@ app = FastAPI()
 # Define allowed origins
 allowed_origins = [
     "https://storeback-jexl.onrender.com",  # Your deployed backend URL
-    "http://localhost:3000",  # Your local development frontend URL
+    "http://localhost:3000",
+    "https://api.printful.com/store/products",
+    "https://api.printful.com",
+    # Your local development frontend URL
 ]
 
 # Add CORS middleware
