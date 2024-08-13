@@ -1,16 +1,23 @@
 from fastapi import FastAPI
-from dotenv import load_dotenv
-import os
-
+from fastapi.middleware.cors import CORSMiddleware
 from app.api import products, orders, shipping, tax
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Access the Printful API key
-api_key = os.getenv("PRINTFUL_API_KEY")
-
 app = FastAPI()
+
+# Define allowed origins
+allowed_origins = [
+    "https://storeback-jexl.onrender.com",  # Your deployed backend URL
+    "http://localhost:3000",  # Your local development frontend URL
+]
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,  # Allows only specified origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
 # Register API routes
 app.include_router(products.router, prefix="/api/products")
