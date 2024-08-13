@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import products, orders, shipping, tax
+import requests
+import os
+from app.api import orders, shipping, tax  # Make sure these paths are correct
 
 app = FastAPI()
 
@@ -19,8 +21,34 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# Register API routes
-app.include_router(products.router, prefix="/api/products")
+# Fetch API key and store ID from environment variables
+PRINTFUL_API_KEY = os.getenv("PRINTFUL_API_KEY")
+PRINTFUL_STORE_ID = os.getenv("PRINTFUL_STORE_ID")
+
+
+# Helper function to create headers for API requests
+def get_headers():
+    return {
+        "Authorization": f"Bearer {PRINTFUL_API_KEY}",
+        "X-PF-Store-Id": PRINTFUL_STORE_ID,
+        "Content-Type": "application/json"
+    }
+
+
+@app.get("/api/products")
+def get_products():
+    """Fetch products from the Printful API"""
+    url = "https://api.printful.com/store/products"
+    headers = get_headers()
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        return response.json()["result"]
+    else:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+
+
+# Register other API routes (orders, shipping, tax)
 app.include_router(orders.router, prefix="/api/orders")
 app.include_router(shipping.router, prefix="/api/shipping")
 app.include_router(tax.router, prefix="/api/tax")
